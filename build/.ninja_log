@@ -1,0 +1,7 @@
+# ninja log v5
+2	253	1710450903279491731	CMakeFiles/tp_opengl.dir/src/glad/glad.c.o	99a501abd6df82e
+386	465	1710450926249884080	tp_opengl	ec8a7f597c18ad2d
+2	385	1710450926169882721	CMakeFiles/tp_opengl.dir/src/main.cpp.o	404472651a2cdb33
+1	98	1710451503171993191	tp_opengl	ce5187b4a7facb3
+1	355	1710451617060236616	CMakeFiles/tp_opengl.dir/src/main.cpp.o	404472651a2cdb33
+355	435	1710451617140237713	tp_opengl	ce5187b4a7facb3
