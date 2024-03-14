@@ -1,3 +1,0 @@
-/home/mattl/Documents/Prog/TP/Info graphique/TP/build/CMakeFiles/tp_opengl.dir
-/home/mattl/Documents/Prog/TP/Info graphique/TP/build/CMakeFiles/edit_cache.dir
-/home/mattl/Documents/Prog/TP/Info graphique/TP/build/CMakeFiles/rebuild_cache.dir
