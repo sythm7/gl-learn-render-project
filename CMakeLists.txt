@@ -4,13 +4,18 @@ cmake_policy(SET CMP0072 NEW)
 
 find_package(OpenGL REQUIRED)
 
-add_executable(tp_opengl 
+add_executable(${PROJECT_NAME} 
     ./src/main.cpp
     ./src/glad/glad.c
     ./src/glad/glad.h
 )
 
-target_link_libraries(tp_opengl 
+if(WIN32)
+    add_subdirectory(glfw/)
+    target_include_directories(${PROJECT_NAME} PUBLIC win32)
+endif()
+
+target_link_libraries(${PROJECT_NAME} 
     glfw
     OpenGL::GL
 )
