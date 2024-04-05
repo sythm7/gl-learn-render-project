@@ -4,18 +4,37 @@ cmake_policy(SET CMP0072 NEW)
 
 find_package(OpenGL REQUIRED)
 
-add_executable(${PROJECT_NAME} 
-    ./src/main.cpp
-    ./src/glad/glad.c
-    ./src/glad/glad.h
+# Listes des fichiers sources et des noms des exécutables
+set(SOURCES_LIST
+    "bezier_uniforme_parametrique.cpp"
+    "bezier_surface.cpp"
+)
+
+set(EXECUTABLES_LIST
+    "bezier_uniforme_parametrique"
+    "bezier_surface"
 )
 
 if(WIN32)
     add_subdirectory(glfw/)
-    target_include_directories(${PROJECT_NAME} PUBLIC win32)
+    add_subdirectory(glm/)
 endif()
 
-target_link_libraries(${PROJECT_NAME} 
-    glfw
-    OpenGL::GL
-)
+# Création des exécutables dans une boucle for
+foreach(EXECUTABLE_NAME ${EXECUTABLES_LIST})
+    add_executable(${EXECUTABLE_NAME} 
+        "./src/${EXECUTABLE_NAME}.cpp"
+        "./src/glad/glad.c"
+        "./src/glad/glad.h"
+    )
+
+    if(WIN32)
+        target_include_directories(${EXECUTABLE_NAME} PUBLIC win32)
+    endif()
+
+    target_link_libraries(${EXECUTABLE_NAME}
+        glfw
+        OpenGL::GL
+        glm
+    )
+endforeach()
