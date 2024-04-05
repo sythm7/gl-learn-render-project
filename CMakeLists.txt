@@ -4,7 +4,7 @@ cmake_policy(SET CMP0072 NEW)
 
 find_package(OpenGL REQUIRED)
 
-# Listes des fichiers sources et des noms des exécutables
+# Listes des fichiers sources et des exécutables
 set(SOURCES_LIST
     "bezier_uniforme_parametrique.cpp"
     "bezier_surface.cpp"
@@ -30,11 +30,13 @@ foreach(EXECUTABLE_NAME ${EXECUTABLES_LIST})
 
     if(WIN32)
         target_include_directories(${EXECUTABLE_NAME} PUBLIC win32)
+        target_link_libraries(${EXECUTABLE_NAME}
+            glm
+        )
     endif()
 
     target_link_libraries(${EXECUTABLE_NAME}
         glfw
         OpenGL::GL
-        glm
     )
 endforeach()
