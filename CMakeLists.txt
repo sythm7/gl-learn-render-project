@@ -26,6 +26,7 @@ foreach(EXECUTABLE_NAME ${EXECUTABLES_LIST})
         "./src/${EXECUTABLE_NAME}.cpp"
         "./src/glad/glad.c"
         "./src/glad/glad.h"
+        "./src/Camera.hpp"
     )
 
     if(WIN32)

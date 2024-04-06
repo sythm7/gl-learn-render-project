@@ -1,146 +1,28 @@
-#include "glad/glad.h"
-#include <GLFW/glfw3.h>
-
 #include <iostream>
 #include <vector>
 #include <cmath>
+#include "Utils.hpp"
 
 using namespace std;
 
-
 #define PAINT_CONTROL_POINTS 0
 
-
-vector<float> add_intermediate_points(vector<float> points) {
-    vector<float> res;
-
-    int size = points.size();
-
-    if (size < 4*2) {
-        return points; // Si moins de 4 points de contrôle, pas besoin d'ajouter des points intermédiaires
-    }
-
-    // Ajouter le premier point
-    res.push_back(points[0]);
-    res.push_back(points[1]);
-
-    for(int i = 2; i < size - 2; i+=2) {
-
-        // Ajouter point
-        res.push_back(points[i]);
-        res.push_back(points[i+1]);
-
-        // Calculer et ajouter le point intermédiaire (sauf le dernier)
-        if(i < size - 4) {
-            float intermediate_x = (points[i] + points[i + 2]) / 2.0f;
-            float intermediate_y = (points[i+1] + points[i+3]) / 2.0f;
-            res.push_back(intermediate_x);
-            res.push_back(intermediate_y);
-        }
-        
-    }
-
-    // Ajouter le dernier point
-    res.push_back(points[size - 2]);
-    res.push_back(points[size - 1]);
-
-    return res;
-}
-
- 
-
-vector<float> bezier_parametrique(const vector<float>& points, int nb_segments) {
-    vector<float> courbe;
-
-    // Regarder si il y a plus de 3 points
-    if (points.size() < 6) {
-        return courbe;
-    }
-
-    // on calcule 3 par 3 les bézier quadratiques
-    for (size_t i = 0; i < points.size() - 4; i += 4) {
-        float a[2] = {points[i], points[i + 1]};
-        float b[2] = {points[i + 2], points[i + 3]};
-        float c[2] = {points[i + 4], points[i + 5]};
-
-        for (float t = 0.0f; t <= 1.0f; t += 1.0f/(float)nb_segments) {
-            
-            float x = powf(1.0f - t, 2.0f) * a[0] + 2 * (1 - t) * t * b[0] + t * t * c[0];
-            float y = powf(1.0f - t, 2.0f) * a[1] + 2 * (1 - t) * t * b[1] + t * t * c[1];
-            courbe.push_back(x);
-            courbe.push_back(y);
-        }
-    }
-
-    return courbe;
-}
-
-
-// shaders
-const char *vertexShaderSource = "#version 330 core\n"
-    "layout (location = 0) in vec2 aPos;\n"
-    "void main()\n"
-    "{\n"
-    "   gl_Position = vec4(aPos.x, aPos.y, 0.0, 1.0);\n"
-    "}\0";
-const char *fragmentShaderSource = "#version 330 core\n"
-    "uniform vec3 my_color;\n"
-    "void main()\n"
-    "{\n"
-    "   gl_FragColor.rgb = my_color;\n"
-    "   gl_FragColor.a = 1;\n"
-    "}\n\0";
-
-void processInput(GLFWwindow *window) {
-    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
-        glfwSetWindowShouldClose(window, true);
-}
+vector<float> bezier_parametrique(vector<float>& points, int nb_segments);
+vector<float> add_intermediate_points(vector<float> points);
 
 int main() {
     // glfw: initialize and configure
     // ------------------------------
-    glfwInit();
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+    GLFWwindow* window = Utils::init_glfw_window("Courbe de bezier uniforme parametrique");
 
-    // glfw window creation
-    // --------------------
-    GLFWwindow* window = glfwCreateWindow(900, 600, "Courbe de bezier uniforme dans l'espace parametrique", NULL, NULL);
-    if (window == NULL) {
-        cout << "Failed to create GLFW window" << endl;
-        glfwTerminate();
-        return -1;
-    }
-    glfwMakeContextCurrent(window);
-
-    // glad: load all OpenGL function pointers
-    // ---------------------------------------
-    if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
-        cout << "Failed to initialize GLAD" << endl;
-        return -1;
+    if(window == NULL) {
+        cout << "Could not create glfw window" << endl;
+        return 1;
     }
 
     // build and compile our shader program
     // ------------------------------------
-    // vertex shader
-    unsigned int vertexShader = glCreateShader(GL_VERTEX_SHADER);
-    glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
-    glCompileShader(vertexShader);
-    // check for shader compile errors
-
-    // fragment shader
-    unsigned int fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-    glShaderSource(fragmentShader, 1, &fragmentShaderSource, NULL);
-    glCompileShader(fragmentShader);
-    // check for shader compile errors
-
-    // link shaders
-    unsigned int shaderProgram = glCreateProgram();
-    glAttachShader(shaderProgram, vertexShader);
-    glAttachShader(shaderProgram, fragmentShader);
-    glLinkProgram(shaderProgram);
-    // check for linking errors
+    MyShader shader("../src/shaders/bezier_surface.vs", "../src/shaders/bezier_surface.fs");
 
     // set up vertex data (and buffer(s)) and configure vertex attributes
     // ------------------------------------------------------------------
@@ -154,15 +36,7 @@ int main() {
         0.4f, -0.1f,
     };
 
-
-    control_points = add_intermediate_points(control_points);
-
-    vector<float> vertices = bezier_parametrique(control_points, 5);
-
-    for (int i = 0; i < vertices.size() - 1; i++) {
-        cout << "(" << vertices[i] << ", " << vertices[i+1] << ")" << endl;
-    }
-
+    vector<float> vertices = bezier_parametrique(control_points, 10);
 
     unsigned int VBO, VAO, VBO_control_points, VAO_control_points;
     glGenVertexArrays(1, &VAO);
@@ -201,7 +75,7 @@ int main() {
     {
         // input
         // -----
-        processInput(window);
+        Utils::processInput(window);
 
         // render
         // ------
@@ -209,13 +83,10 @@ int main() {
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
-
-        GLint color_location = glGetUniformLocation(shaderProgram, "my_color");
-        float color[3] = {1.0f, 1.0f, 1.0f};
-        glUniform3fv(color_location, 1, color);
-        glUseProgram(shaderProgram);
+        // ICI COLOR
         glBindVertexArray(VAO_control_points); 
         
+        shader.setColor(WHITE);
 
         // boucler chaque point de contrôle pour dessiner ligne par ligne
         if(PAINT_CONTROL_POINTS) {
@@ -223,14 +94,11 @@ int main() {
                 {
                     // Alterner la couleur pour chaque ligne
                     if (i % 2 == 0) {
-                        float blue[3] = {0.0f, 0.0f, 1.0f};
-                        glUniform3fv(color_location, 1, blue);
+                        shader.setColor(BLUE);
                     }
                     else {
-                        float green[3] = {0.0f, 1.0f, 0.0f};
-                        glUniform3fv(color_location, 1, green);
+                        shader.setColor(GREEN);
                     }
-                    glUseProgram(shaderProgram);
 
                     // Ligne entre le point de controle i et le i + 1
                     glDrawArrays(GL_LINE_STRIP, i, 2);
@@ -242,14 +110,10 @@ int main() {
             glDrawArrays(GL_LINE_STRIP, 0, control_points.size() / 2);
         }
 
-        color_location = glGetUniformLocation(shaderProgram, "my_color");
-        float color2[3] = {1.0f, 0.0f, 0.0f};
-        glUniform3fv(color_location, 1, color2);
-        glUseProgram(shaderProgram);
+        shader.setColor(RED);
+
         glBindVertexArray(VAO); // seeing as we only have a single VAO there's no need to bind it every time, but we'll do so to keep things a bit more organized
         glDrawArrays(GL_LINE_STRIP, 0, vertices.size() / 2);
-
-        
 
         glBindVertexArray(0); // no need to unbind it every time
 
@@ -263,10 +127,78 @@ int main() {
     // ------------------------------------------------------------------------
     glDeleteVertexArrays(1, &VAO);
     glDeleteBuffers(1, &VBO);
-    glDeleteProgram(shaderProgram);
+    glDeleteProgram(shader.ID);
 
     // glfw: terminate, clearing all previously allocated GLFW resources.
     // ------------------------------------------------------------------
     glfwTerminate();
     return 0;
+}
+
+
+vector<float> bezier_parametrique(vector<float>& points, int nb_segments) {
+
+    points = add_intermediate_points(points);
+
+    vector<float> courbe;
+
+    // Regarder si il y a plus de 3 points
+    if (points.size() < 6) {
+        return courbe;
+    }
+
+    // on calcule 3 par 3 les bézier quadratiques
+    for (size_t i = 0; i < points.size() - 4; i += 4) {
+        float a[2] = {points[i], points[i + 1]};
+        float b[2] = {points[i + 2], points[i + 3]};
+        float c[2] = {points[i + 4], points[i + 5]};
+
+        for (float t = 0.0f; t <= 1.0f; t += 1.0f/(float)nb_segments) {
+            
+            float x = powf(1.0f - t, 2.0f) * a[0] + 2 * (1 - t) * t * b[0] + t * t * c[0];
+            float y = powf(1.0f - t, 2.0f) * a[1] + 2 * (1 - t) * t * b[1] + t * t * c[1];
+            courbe.push_back(x);
+            courbe.push_back(y);
+        }
+    }
+
+    return courbe;
+}
+
+
+
+vector<float> add_intermediate_points(vector<float> points) {
+    vector<float> res;
+
+    int size = points.size();
+
+    if (size < 4*2) {
+        return points; // Si moins de 4 points de contrôle, pas besoin d'ajouter des points intermédiaires
+    }
+
+    // Ajouter le premier point
+    res.push_back(points[0]);
+    res.push_back(points[1]);
+
+    for(int i = 2; i < size - 2; i+=2) {
+
+        // Ajouter point
+        res.push_back(points[i]);
+        res.push_back(points[i+1]);
+
+        // Calculer et ajouter le point intermédiaire (sauf le dernier)
+        if(i < size - 4) {
+            float intermediate_x = (points[i] + points[i + 2]) / 2.0f;
+            float intermediate_y = (points[i+1] + points[i+3]) / 2.0f;
+            res.push_back(intermediate_x);
+            res.push_back(intermediate_y);
+        }
+        
+    }
+
+    // Ajouter le dernier point
+    res.push_back(points[size - 2]);
+    res.push_back(points[size - 1]);
+
+    return res;
 }
