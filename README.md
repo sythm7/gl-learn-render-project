@@ -2,13 +2,13 @@
 
 ## Librairies à installer :
 
-#### Distributions Linux basées sur debian
+### Distributions Linux basées sur debian
 sudo apt install cmake make g++ libglfw3-dev libglm-dev
 
-#### Distributions basées sur Arch Linux
+### Distributions basées sur Arch Linux
 sudo pacman -S make cmake gcc glfw glm
 
-#### Windows
+### Windows
 Installer CMake pour Windows <br>
 Installer g++ et make pour Windows puis les ajouter dans le path
 
@@ -18,11 +18,11 @@ cd gl-learn-render-project <br>
 mkdir build <br>
 cd build <br>
 
-#### Sur Linux 
+### Sur Linux 
 cmake .. <br>
 make
 
-#### Sur Windows
+### Sur Windows
 cmake -G "MinGW Makefiles" -DCMAKE_MAKE_PROGRAM="make" .. <br>
 make
 
