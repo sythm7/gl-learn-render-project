@@ -41,7 +41,7 @@ namespace Utils {
 
         // glfw window creation
         // --------------------
-        GLFWwindow* window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "Surface de bezier", NULL, NULL);
+        GLFWwindow* window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, title, NULL, NULL);
         if (window == NULL) {
             cout << "Failed to create GLFW window" << endl;
             glfwTerminate();
