@@ -2,11 +2,11 @@
 
 ## Liste des commandes :
 
-git clone https://github.com/sythm7/gl-learn-render-project.git
-cd gl-learn-render-project
-mkdir build
-cd build
-cmake -G "MinGW Makefiles" -DCMAKE_MAKE_PROGRAM="make" ..
+git clone https://github.com/sythm7/gl-learn-render-project.git <br>
+cd gl-learn-render-project <br>
+mkdir build <br>
+cd build <br>
+cmake -G "MinGW Makefiles" -DCMAKE_MAKE_PROGRAM="make" .. <br>
 make
 
 ## Liste des exécutables :
