@@ -9,7 +9,7 @@ using namespace std;
 
 int main() {
 
-    GLFWwindow* window = Utils::initGlfwWindow("Surface de bezier", GLFW_CURSOR_DISABLED);
+    GLFWwindow* window = Utils::initGlfwWindow("Polygone de controle en 3D", GLFW_CURSOR_DISABLED);
 
     if(window == NULL) {
         cout << "Could not create glfw window" << endl;

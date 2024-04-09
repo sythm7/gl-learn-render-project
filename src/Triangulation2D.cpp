@@ -11,7 +11,7 @@ int main() {
     // glfw: initialize and configure
     // ------------------------------
 
-    GLFWwindow* window = Utils::initGlfwWindow("Courbe de bezier uniforme parametrique", GLFW_CURSOR_DISABLED);
+    GLFWwindow* window = Utils::initGlfwWindow("Triangulation 2D d'une surface plane", GLFW_CURSOR_DISABLED);
 
     if(window == NULL) {
         cout << "Could not create glfw window" << endl;
