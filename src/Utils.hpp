@@ -1,4 +1,5 @@
 #include <iostream>
+#include <vector>
 #include "glad/glad.h"
 #include "Camera.hpp"
 
@@ -13,20 +14,24 @@
 #define PURPLE 1.0f, 0.0f, 1.0f
 #define CYAN 0.0f, 1.0f, 1.0f
 
+#define _2D 2
+#define _3D 3
 
 namespace Utils {
+
+    using namespace std;
 
     Camera* camera = NULL;
 
     unsigned int SCR_WIDTH = 800;
     unsigned int SCR_HEIGHT = 600;
 
-    void framebuffer_size_callback(GLFWwindow* window, int width, int height);
-    void mouse_callback(GLFWwindow* window, double xposIn, double yposIn);
-    void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
+    void framebufferSizeCallback(GLFWwindow* window, int width, int height);
+    void mouseCallback(GLFWwindow* window, double xposIn, double yposIn);
+    void scrollCallback(GLFWwindow* window, double xoffset, double yoffset);
     void processInput(GLFWwindow *window);
 
-    GLFWwindow* init_glfw_window(const char* title) {
+    GLFWwindow* initGlfwWindow(const char* title, int glfw_cursor_mode) {
         // glfw: initialize and configure
         // ------------------------------
         glfwInit();
@@ -44,13 +49,12 @@ namespace Utils {
         }
 
         glfwMakeContextCurrent(window);
-        glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
+        glfwSetFramebufferSizeCallback(window, framebufferSizeCallback);
         
-        glfwSetCursorPosCallback(window, mouse_callback);
-        glfwSetScrollCallback(window, scroll_callback);
+        glfwSetCursorPosCallback(window, mouseCallback);
 
         // tell GLFW to capture our mouse
-        glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+        glfwSetInputMode(window, GLFW_CURSOR, glfw_cursor_mode);
 
         // glad: load all OpenGL function pointers
         // ---------------------------------------
@@ -65,14 +69,14 @@ namespace Utils {
 
     // glfw: whenever the window size changed (by OS or user resize) this callback function executes
     // ---------------------------------------------------------------------------------------------
-    void framebuffer_size_callback(GLFWwindow* window, int width, int height)
+    void framebufferSizeCallback(GLFWwindow* window, int width, int height)
     {
         // make sure the viewport matches the new window dimensions; note that width and 
         // height will be significantly larger than specified on retina displays.
         glViewport(0, 0, width, height);
     }
 
-    void mouse_callback(GLFWwindow* window, double xposIn, double yposIn)
+    void mouseCallback(GLFWwindow* window, double xposIn, double yposIn)
     {
 
         // don't process the event
@@ -120,7 +124,7 @@ namespace Utils {
 
     // glfw: whenever the mouse scroll wheel scrolls, this callback is called
     // ----------------------------------------------------------------------
-    void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
+    void scrollCallback(GLFWwindow* window, double xoffset, double yoffset)
     {
 
         // don't process the event
@@ -152,4 +156,32 @@ namespace Utils {
 
         camera->processInput(window);
     }
+
+    void createBufferNoVertexAttrib(const vector<float>& points, const GLuint dimension, GLuint* VAO, GLuint* VBO) {
+
+        glGenVertexArrays(1, VAO);
+        glGenBuffers(1, VBO);
+
+        // bind the Vertex Array Object first, then bind and set vertex buffer(s), and then configure vertex attributes(s).
+        glBindVertexArray(*VAO);
+
+        glBindBuffer(GL_ARRAY_BUFFER, *VBO);
+        glBufferData(GL_ARRAY_BUFFER, points.size() * sizeof(float), points.data(), GL_STATIC_DRAW);    
+    }
+
+    void createBuffer(const vector<float>& points, const GLuint dimension, GLuint* VAO, GLuint* VBO) {
+        createBufferNoVertexAttrib(points, dimension, VAO, VBO);
+        glVertexAttribPointer(0, dimension, GL_FLOAT, GL_FALSE, dimension * sizeof(float), (void*)0);
+        glEnableVertexAttribArray(0);
+    }    
+
+    void createBuffer(const vector<float>& points, const vector<GLuint>& indices, const GLuint dimension, GLuint* VAO, GLuint* VBO, GLuint* EBO) {
+        createBufferNoVertexAttrib(points, dimension, VAO, VBO);
+        glGenBuffers(1, EBO);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, *EBO);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(GLuint), indices.data(), GL_STATIC_DRAW);
+        glVertexAttribPointer(0, dimension, GL_FLOAT, GL_FALSE, dimension * sizeof(float), (void*)0);
+        glEnableVertexAttribArray(0);
+    }   
+
 }

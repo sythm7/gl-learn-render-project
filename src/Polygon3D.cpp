@@ -1,6 +1,4 @@
 #include <glm/glm.hpp>
-#include <glm/gtc/type_ptr.hpp>
-
 #include "Utils.hpp"
 
 #include <iostream>
@@ -11,68 +9,57 @@ using namespace std;
 
 int main() {
 
-    GLFWwindow* window = Utils::init_glfw_window("Surface de bezier");
+    GLFWwindow* window = Utils::initGlfwWindow("Surface de bezier", GLFW_CURSOR_DISABLED);
+
+    if(window == NULL) {
+        cout << "Could not create glfw window" << endl;
+        return 1;
+    }
 
     // build and compile our MyShader program
-    MyShader shader("../src/shaders/bezier_surface.vs", "../src/shaders/bezier_surface.fs");
-    Utils::camera = new Camera;
+    MyShader shader("../src/shaders/Vertex.vs", "../src/shaders/Fragment.fs");
+    Utils::camera = new Camera(vec3(1.0f, 1.5f, 3.0f), -110.0f, -20.0f, 60.0f, 0.08f);
 
-    vector<float> control_points = {
-        -0.5f, -0.5f, -0.5f,
-         0.5f, -0.5f, -0.5f,
-         0.5f,  0.5f, -0.5f,
-         0.5f,  0.5f, -0.5f,
-        -0.5f,  0.5f, -0.5f,
-        -0.5f, -0.5f, -0.5f,
+    vector<float> controlPoints = {
+        1.0f, 0.0f, 0.5f,
+        0.5f, 1.0f, 0.5f,
 
-        -0.5f, -0.5f,  0.5f,
-         0.5f, -0.5f,  0.5f,
-         0.5f,  0.5f,  0.5f,
-         0.5f,  0.5f,  0.5f,
-        -0.5f,  0.5f,  0.5f,
-        -0.5f, -0.5f,  0.5f,
+        1.0f, 0.0f, -0.5f,
+        0.5f, 1.0f, -0.5f,
 
-        -0.5f,  0.5f,  0.5f,
-        -0.5f,  0.5f, -0.5f,
-        -0.5f, -0.5f, -0.5f,
-        -0.5f, -0.5f, -0.5f,
-        -0.5f, -0.5f,  0.5f,
-        -0.5f,  0.5f,  0.5f,
+        -1.0f, 0.0f, 0.5f,
+        -0.5f, 1.0f, 0.5f,
 
-         0.5f,  0.5f,  0.5f,
-         0.5f,  0.5f, -0.5f,
-         0.5f, -0.5f, -0.5f,
-         0.5f, -0.5f, -0.5f,
-         0.5f, -0.5f,  0.5f,
-         0.5f,  0.5f,  0.5f,
-
-        -0.5f, -0.5f, -0.5f,
-         0.5f, -0.5f, -0.5f,
-         0.5f, -0.5f,  0.5f,
-         0.5f, -0.5f,  0.5f,
-        -0.5f, -0.5f,  0.5f,
-        -0.5f, -0.5f, -0.5f,
-
-        -0.5f,  0.5f, -0.5f,
-         0.5f,  0.5f, -0.5f,
-         0.5f,  0.5f,  0.5f,
-         0.5f,  0.5f,  0.5f,
-        -0.5f,  0.5f,  0.5f,
-        -0.5f,  0.5f, -0.5f
+        -1.0f, 0.0f, -0.5f,
+        -0.5f, 1.0f, -0.5f,
     };
 
-    unsigned int VBO, VAO, VBO_control_points, VAO_control_points;
-    glGenVertexArrays(1, &VAO);
-    glGenBuffers(1, &VBO);
+    vector<GLuint> indices = {
+        0, 1, 2,
+        1, 2, 3,
 
-    // bind the Vertex Array Object first, then bind and set vertex buffer(s), and then configure vertex attributes(s).
-    glBindVertexArray(VAO);
+        1, 3, 5,
+        3, 5, 7,
 
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, control_points.size() * sizeof(float), control_points.data(), GL_STATIC_DRAW);
+        4, 5, 6,
+        5, 6, 7
+    };
 
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-    glEnableVertexAttribArray(0);
+    vector<float> axis3D = {
+        0, 0, 0,
+        5, 0, 0,
+
+        0, 0, 0,
+        0, 5, 0,
+        
+        0, 0, 0,
+        0, 0, 5
+    };
+
+    unsigned int VBO, VAO, VBO_control_points, VAO_control_points, EBO;
+
+    Utils::createBuffer(controlPoints, indices, _3D, &VAO, &VBO, &EBO);
+    Utils::createBuffer(axis3D, _3D, &VAO_control_points, &VBO_control_points);
 
     // note that this is allowed, the call to glVertexAttribPointer registered VBO as the vertex attribute's bound vertex buffer object so afterwards we can safely unbind
     glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -82,6 +69,9 @@ int main() {
     glBindVertexArray(0);
     // render loop
     // -----------
+
+    shader.use();
+
     while (!glfwWindowShouldClose(window))
     {
 
@@ -96,19 +86,29 @@ int main() {
         // ------
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
-  
-        shader.setColor(BLUE);
 
         // pass projection matrix to MyShader (note that in this case it could change every frame)
         Utils::camera->updateView(shader, (float)Utils::SCR_WIDTH, (float)Utils::SCR_HEIGHT);
 
         // render boxes
-        glBindVertexArray(VAO);
+        glBindVertexArray(VAO_control_points);
         // calculate the model matrix for each object and pass it to MyShader before drawing
         glm::mat4 model = glm::mat4(1.0f); // make sure to initialize matrix to identity matrix first
         shader.setMat4("model", model);
 
-        glDrawArrays(GL_TRIANGLES, 0, 36);
+        // Afficher un axe 3D permettant de se repérer dans l'espace
+        shader.setColor(BLUE);
+        glDrawArrays(GL_LINE_STRIP, 0, 2);
+        shader.setColor(GREEN);
+        glDrawArrays(GL_LINE_STRIP, 2, 4);
+        shader.setColor(RED);
+        glDrawArrays(GL_LINE_STRIP, 4, 6);
+
+        // Afficher le polygone de controle en 3D
+        shader.setColor(PURPLE);
+        glBindVertexArray(VAO);
+        glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
+
         // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
         // -------------------------------------------------------------------------------
         glfwSwapBuffers(window);
@@ -119,12 +119,14 @@ int main() {
     // ------------------------------------------------------------------------
     glDeleteVertexArrays(1, &VAO);
     glDeleteBuffers(1, &VBO);
-    glDeleteShader(shader.ID);
-
+    glDeleteVertexArrays(1, &VAO_control_points);
+    glDeleteBuffers(1, &VBO_control_points);
+    glDeleteProgram(shader.ID);
     delete Utils::camera;
 
     // glfw: terminate, clearing all previously allocated GLFW resources.
     // ------------------------------------------------------------------
     glfwTerminate();
+
     return 0;
 }

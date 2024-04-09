@@ -6,13 +6,15 @@ find_package(OpenGL REQUIRED)
 
 # Listes des fichiers sources et des exécutables
 set(SOURCES_LIST
-    "bezier_uniforme_parametrique.cpp"
-    "bezier_surface.cpp"
+    "BezierUniformParametric.cpp"
+    "Polygon3D.cpp"
+    "Triangulation2D.cpp"
 )
 
 set(EXECUTABLES_LIST
-    "bezier_uniforme_parametrique"
-    "bezier_surface"
+    "BezierUniformParametric"
+    "Polygon3D"
+    "Triangulation2D"
 )
 
 if(WIN32)
@@ -27,6 +29,8 @@ foreach(EXECUTABLE_NAME ${EXECUTABLES_LIST})
         "./src/glad/glad.c"
         "./src/glad/glad.h"
         "./src/Camera.hpp"
+        "./src/Triangulation.hpp"
+        "./src/Bezier.hpp"
     )
 
     if(WIN32)

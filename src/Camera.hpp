@@ -75,6 +75,10 @@ class Camera {
                 cameraPos -= normalize(cross(cameraFront, cameraUp)) * cameraSpeed;
             if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
                 cameraPos += normalize(cross(cameraFront, cameraUp)) * cameraSpeed;
+            if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)
+                cameraPos += cameraSpeed * cameraUp;
+            if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS)
+                cameraPos -= cameraSpeed * cameraUp;
         }
 
         void setFov(float fov) {
